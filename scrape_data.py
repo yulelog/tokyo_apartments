@@ -5,11 +5,12 @@ from datetime import date
 import pandas as pd
 import shutil
 import logging
+from data_cleanup import clean_up
 
 # TODO: fix all the file paths: logs, data.csv, floorplan images to S3 buckets
 PATH = '.'
 
-logging.basicConfig(filename=f'{__name__}_{date.today().strftime('%Y%m%d')}.log', filemode='w', level=logging.INFO)
+logging.basicConfig(filename=f"{__name__}_{date.today().strftime('%Y%m%d')}.log", filemode='w', level=logging.DEBUG)
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
 
@@ -62,7 +63,7 @@ def get_property_details(root, property_id):
   
   image_url = root + get_floorplan_link(soup)
   d = {'id': id, 'floorplan_image': image_url}  # "floorplan_image" key saves the image link to the floor plan image
-  save_image(image_url, id) # save down the floorplan image
+  # save_image(image_url, id) # save down the floorplan image
 
   for p in details.findAll('tr'):  # each property detail is stored in individual rows, with the attribute name in the header cell <th>, and the attribute data in the data cell <td>
     try:
@@ -187,7 +188,7 @@ def main():
         property_details = get_website_properties(url, subpage_tags)
         df = pd.DataFrame(property_details)
         filename = PATH + '/raw_data/' + url[url.index('//')+2:url.index('.')] + '_' + date.today().strftime('%Y%m%d') + '.csv'
-        df.to_csv(filename)
+        clean_up(df).to_csv(filename)
         LOGGER.info(f"[INFO] Finished scraping {url} and saved data to {filename}")
 
 
