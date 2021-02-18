@@ -91,6 +91,15 @@ def clean_up(df):
     # built_date
     df['built_date'] = [(int(i[:i.index('年')]), int(i[i.index('年')+1:i.index('月')]), 1) if type(i) is str else i for i in df['built_date']]  # assign built date to be the first of every month
 
+    # translate property type
+    property_type = {
+        'マンション': 'mansion', 
+        '店舗/事務所': 'office', 
+        '戸建/テラスハウス': 'house', 
+        'アパート': 'apartment'
+        }
+    df['property_type'] = [property_type[i] for i in df['property_type']]
+    
     # translate structure
     df['structure'] = [check_property_type(i) if type(i) is str else i for i in df['structure']]
 
