@@ -10,7 +10,7 @@ from data_cleanup import clean_up
 # TODO: fix all the file paths: logs, data.csv, floorplan images to S3 buckets
 PATH = '.'
 
-logging.basicConfig(filename=f"{__name__}_{date.today().strftime('%Y%m%d')}.log", filemode='w', level=logging.DEBUG)
+logging.basicConfig(filename=f"/home/ubuntu/logs/scrape_data_{date.today().strftime('%Y%m%d')}.log", filemode='w', level=logging.INFO)
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
 
@@ -187,8 +187,9 @@ def main():
         subpage_tags = get_sitemap(url)
         property_details = get_website_properties(url, subpage_tags)
         df = pd.DataFrame(property_details)
-        filename = PATH + '/raw_data/' + url[url.index('//')+2:url.index('.')] + '_' + date.today().strftime('%Y%m%d') + '.csv'
-        clean_up(df).to_csv(filename)
+        filename = 'raw_data/' + url[url.index('//')+2:url.index('.')] + '_' + date.today().strftime('%Y%m%d') + '.csv'
+        df.to_csv(filename)
+        clean_up(df).to_csv('processed_data_20200218.csv')
         LOGGER.info(f"[INFO] Finished scraping {url} and saved data to {filename}")
 
 
