@@ -59,10 +59,14 @@ def get_property_details(root, property_id):
   details = soup.find('table')  # the property details are stored in the table
 
   id = property_id.replace('/id/','').replace('/','_')
-  
-  image_url = root + get_floorplan_link(soup)
-  d = {'id': id, 'floorplan_image': image_url}  # "floorplan_image" key saves the image link to the floor plan image
-  save_image(image_url, id) # save down the floorplan image
+  d = {'id': id}
+
+  try:
+    image_url = root + get_floorplan_link(soup)
+    d.update({'floorplan_image': image_url})  # "floorplan_image" key saves the image link to the floor plan image
+    save_image(image_url, id) # save down the floorplan image
+  except IndexError: # when there's no image
+    pass
 
   for p in details.findAll('tr'):  # each property detail is stored in individual rows, with the attribute name in the header cell <th>, and the attribute data in the data cell <td>
     try:
