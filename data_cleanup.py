@@ -45,11 +45,26 @@ def check_property_type(p):
   else:
     return p
 
+def get_floor_properties(floor):
+    """
+    :param floor: expect to be a string
+    """
+    if type(floor) is str:
+        floor = floor.split('/')
+        unit_floor = floor[0].replace('階','').replace('地下','-').split('～')
+        lowest_floor = min([int(n.strip()) for n in unit_floor]) if len(unit_floor)> 1 else int(unit_floor[0].strip())
+        floor_number = max([int(n.strip()) for n in unit_floor]) - min([int(n.strip()) for n in unit_floor])+1 if len(unit_floor)> 1 else 1
+        building_height = int(floor[1][floor[1].index('地上')+2:floor[1].index('階')])
+        return {'floor': floor, 'unit_floor': unit_floor, 'lowest_floor': lowest_floor, 'floor_number': floor_number, 'building_height': building_height}
+    else:
+        return {'floor': floor}
+
 
 def clean_up(df):
 
     # Pick out the intuitively relevant attributes from the dataframe and translate them into English for easier access
     translate_dict = {
+        'id': 'id', 
         '物件タイプ': 'property_type',  # categorical
         '構造': 'structure',  # categorical
         '間取り': 'floor_plan',  # split into two: number of bedrooms (numerical) and floor_plan (ordinal)
@@ -71,7 +86,7 @@ def clean_up(df):
     df['monthly_rent'] = [int(i[:i.index('円')].replace(',','')) for i in df['monthly_rent']]
 
     # remove commercial properties
-    df = df[~df['floor_plan'].isin(['店舗/事務所', '店舗','事務所'])]
+    df = df[~df['floor_plan'].isin(['店舗/事務所', '店舗','事務所'])].reset_index(drop=True)
 
     # splitting floor_plan into two attributes: bedroom_num and floor_plan 
     floor_plan_map = {'K': 1, 'DK': 2, 'LDK': 3, 'SLDK': 4}
@@ -80,14 +95,10 @@ def clean_up(df):
 
     # transform the 'closest_stations' feature into a list of tuples indicating distance to the train line and station
     df['closest_stations'] = [get_distance_to_station(i) for i in df['closest_stations']]
-
+    
     # floor
-    df['floor'] = [i.split('/') for i in df['floor']]
-    df['unit_floor'] = [i[0].replace('階','').replace('地下','-').split('～') for i in df['floor']]
-    df['lowest_floor'] = [min([int(n.strip()) for n in i]) if len(i)> 1 else int(i[0].strip()) for i in df['unit_floor']]  # the lowest floor that the property unit locates
-    df['floor_number'] = [max([int(n.strip()) for n in i]) - min([int(n.strip()) for n in i])+1 if len(i)> 1 else 1 for i in df['unit_floor']]  # number of floors that the property unit has
-    df['building_height'] = [int(i[1][i[1].index('地上')+2:i[1].index('階')]) for i in df['floor']]  # the number of floors that the building has
-
+    df[['floor', 'unit_floor', 'lowest_floor', 'floor_number', 'building_height']] = pd.DataFrame([get_floor_properties(i) for i in df['floor']])
+   
     # built_date
     df['built_date'] = [(int(i[:i.index('年')]), int(i[i.index('年')+1:i.index('月')]), 1) if type(i) is str else i for i in df['built_date']]  # assign built date to be the first of every month
 
