@@ -1,3 +1,4 @@
+import sys
 import requests
 from requests import get
 from bs4 import BeautifulSoup
@@ -7,12 +8,13 @@ import shutil
 import logging
 from data_cleanup import clean_up
 
-# TODO: fix all the file paths: logs, data.csv, floorplan images to S3 buckets
-PATH = '.'
-
-logging.basicConfig(filename=f"/home/ubuntu/logs/scrape_data_{date.today().strftime('%Y%m%d')}.log", filemode='w', level=logging.INFO)
+logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
+output_file_handler = logging.FileHandler(f"/home/ubuntu/logs/tokyo_apartments_{date.today().strftime('%Y%m%d')}.log")
+stdout_handler = logging.StreamHandler(sys.stdout)
+LOGGER.addHandler(output_file_handler)
+LOGGER.addHandler(stdout_handler)
 
 HEADERS = requests.utils.default_headers()
 HEADERS.update({
@@ -156,7 +158,7 @@ def save_image(image_url, property_id):
         # Set decode_content value to True, otherwise the downloaded image file's size will be zero.
         r.raw.decode_content = True
         
-        filename = PATH + '/floorplans/' + property_id + '.jpg'
+        filename = f"floorplans/{property_id}.jpg"
         # Open a local file with wb ( write binary ) permission.
         with open(filename,'wb') as f:
             shutil.copyfileobj(r.raw, f)
