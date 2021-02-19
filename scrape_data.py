@@ -19,17 +19,14 @@ HEADERS.update({
     'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0',
 })
 
-SITES = [
-    'https://tomigaya.jp/', 
-    ]
 
-# SITES = [
-#     'https://tomigaya.jp/', 
-#     'https://daikanyamafudosan.com/', 
-#     'http://nakame-re.com/',
-#     'https://aoyama-fudousan.com/',
-#     'http://tokyo-shinagawa.com/'
-#     ]
+SITES = [
+     'https://tomigaya.jp/', 
+     'https://daikanyamafudosan.com/', 
+     'http://nakame-re.com/',
+     'https://aoyama-fudousan.com/',
+     'http://tokyo-shinagawa.com/'
+     ]
 
 
 def get_property_list(url):
@@ -63,7 +60,7 @@ def get_property_details(root, property_id):
   
   image_url = root + get_floorplan_link(soup)
   d = {'id': id, 'floorplan_image': image_url}  # "floorplan_image" key saves the image link to the floor plan image
-  # save_image(image_url, id) # save down the floorplan image
+  save_image(image_url, id) # save down the floorplan image
 
   for p in details.findAll('tr'):  # each property detail is stored in individual rows, with the attribute name in the header cell <th>, and the attribute data in the data cell <td>
     try:
@@ -187,9 +184,9 @@ def main():
         subpage_tags = get_sitemap(url)
         property_details = get_website_properties(url, subpage_tags)
         df = pd.DataFrame(property_details)
-        filename = 'raw_data/' + url[url.index('//')+2:url.index('.')] + '_' + date.today().strftime('%Y%m%d') + '.csv'
-        df.to_csv(filename)
-        clean_up(df).to_csv('processed_data_20200218.csv')
+        filename = f"{url[url.index('//')+2:url.index('.')]}_{date.today().strftime('%Y%m%d')}.csv"
+        df.to_csv('raw_data/'+filename)
+        clean_up(df).to_csv('processed_data/'+filename)
         LOGGER.info(f"[INFO] Finished scraping {url} and saved data to {filename}")
 
 
