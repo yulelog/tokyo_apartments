@@ -107,9 +107,10 @@ def clean_up(df):
         'マンション': 'mansion', 
         '店舗/事務所': 'office', 
         '戸建/テラスハウス': 'house', 
-        'アパート': 'apartment'
+        'アパート': 'apartment',
+        'タワーマンション': 'tower_mansion'
         }
-    df['property_type'] = [property_type[i] for i in df['property_type']]
+    df['property_type'] = [property_type[i] if i in property_type.keys() else None for i in df['property_type']]
     
     # translate structure
     df['structure'] = [check_property_type(i) if type(i) is str else i for i in df['structure']]
