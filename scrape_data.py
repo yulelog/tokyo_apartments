@@ -57,7 +57,9 @@ def get_property_details(root, property_id):
   soup = BeautifulSoup(page.content, "lxml")
 
   details = soup.find('table')  # the property details are stored in the table
-
+  if details is None:
+    return
+  
   id = property_id.replace('/id/','').replace('/','_')
   d = {'id': id}
 
