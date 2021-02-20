@@ -7,13 +7,14 @@ import pandas as pd
 import shutil
 import logging
 from data_cleanup import clean_up
+from s3 import save_image, load_to_s3
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
-output_file_handler = logging.FileHandler(f"/home/ubuntu/logs/tokyo_apartments_{date.today().strftime('%Y%m%d')}.log")
+# output_file_handler = logging.FileHandler(f"/home/ubuntu/logs/tokyo_apartments_{date.today().strftime('%Y%m%d')}.log")
 stdout_handler = logging.StreamHandler(sys.stdout)
-LOGGER.addHandler(output_file_handler)
+# LOGGER.addHandler(output_file_handler)
 LOGGER.addHandler(stdout_handler)
 
 HEADERS = requests.utils.default_headers()
@@ -58,7 +59,7 @@ def get_property_details(root, property_id):
 
   details = soup.find('table')  # the property details are stored in the table
   if details is None:
-    return
+    return {}
   
   id = property_id.replace('/id/','').replace('/','_')
   d = {'id': id}
@@ -148,30 +149,6 @@ def get_website_properties(root, subpage_tags):
   LOGGER.info("[INFO] Finished scrapping all property data")
   return property_details
 
-
-def save_image(image_url, property_id):
-    """
-    Given a url to a property's floorplan image, save the image down locally with property id
-    :param image_url: string of the url to the image
-    :param property_id: the string of property id
-    :return : nothing
-    """
-    # Open the url image, set stream to True, this will return the stream content.
-    r = requests.get(image_url, stream = True)
-
-    # Check if the image was retrieved successfully
-    if r.status_code == 200:
-        # Set decode_content value to True, otherwise the downloaded image file's size will be zero.
-        r.raw.decode_content = True
-        
-        filename = f"floorplans/{property_id}.jpg"
-        # Open a local file with wb ( write binary ) permission.
-        with open(filename,'wb') as f:
-            shutil.copyfileobj(r.raw, f)
-    else:
-        LOGGER.error(f"[ERROR] Unable to download the floorplan image of property: {property_id}")
-
-
 def get_sitemap(url):
     """
     given a real estate site, get its sitemap of property locations
@@ -193,9 +170,9 @@ def main():
         property_details = get_website_properties(url, subpage_tags)
         df = pd.DataFrame(property_details)
         filename = f"{url[url.index('//')+2:url.index('.')]}_{date.today().strftime('%Y%m%d')}.csv"
-        df.to_csv('raw_data/'+filename)
-        clean_up(df).to_csv('processed_data/'+filename)
-        LOGGER.info(f"[INFO] Finished scraping {url} and saved data to {filename}")
+        load_to_s3(df, 'raw_data/'+filename)
+        load_to_s3(clean_up(df),'processed_data/'+filename)
+        LOGGER.info(f"[INFO] Finished scraping {url} and uploaded {filename} to s3")
 
 
 if __name__ == '__main__':
