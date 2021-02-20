@@ -80,6 +80,7 @@ def clean_up(df):
     # Remove rows that do not contain values for the target variable: monthly_rent 
     # (they're from the webpage for building instead of individual property unit)
     df = df[df['monthly_rent'].isna()==False].reset_index(drop=True)
+    df = df[df['monthly_rent'].str.contains('円' )].reset_index(drop=True)
 
     # Translate string into numbers for size, monthly_rent
     df['size'] = [float(i[:i.index('m')]) for i in df['size']]
