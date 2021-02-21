@@ -59,6 +59,16 @@ def get_floor_properties(floor):
     else:
         return {'floor': floor}
 
+def built_to_date(built_date):
+  """
+  calculate the length since built year till the date the property is available for rent online 
+  :param built_date: a tuple of (year, month, 1)
+  :return : number of years since the building is built
+  """
+  try:
+    return date.today().year - built_date[0]
+  except ValueError:
+    return None
 
 def clean_up(df):
 
@@ -102,6 +112,7 @@ def clean_up(df):
    
     # built_date
     df['built_date'] = [(int(i[:i.index('年')]), int(i[i.index('年')+1:i.index('月')]), 1) if type(i) is str else i for i in df['built_date']]  # assign built date to be the first of every month
+    df['built_to_date'] = [built_to_date(d) for d in df['built_date']]
 
     # translate property type
     property_type = {

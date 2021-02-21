@@ -7,7 +7,9 @@ import pandas as pd
 import shutil
 import logging
 from data_cleanup import clean_up
+from feature_engineering import generate_features
 from s3 import save_image, load_to_s3
+
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
 LOGGER = logging.getLogger(__name__)
@@ -171,7 +173,7 @@ def main():
         df = pd.DataFrame(property_details)
         filename = f"{url[url.index('//')+2:url.index('.')]}_{date.today().strftime('%Y%m%d')}.csv"
         load_to_s3(df, 'raw_data/'+filename)
-        load_to_s3(clean_up(df),'processed_data/'+filename)
+        load_to_s3(generate_features(clean_up(df)),'processed_data/'+filename)
         LOGGER.info(f"[INFO] Finished scraping {url} and uploaded {filename} to s3")
 
 
