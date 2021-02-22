@@ -67,7 +67,7 @@ def built_to_date(built_date):
   """
   try:
     return date.today().year - built_date[0]
-  except ValueError:
+  except:
     return None
 
 def clean_up(df):

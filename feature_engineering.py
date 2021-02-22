@@ -13,7 +13,7 @@ def specs_to_dict(l):
   """
   d = {}
   if type(l) is list:
-    [d.update({SPECS_MAP[spec]: 1}) if spec in SPECS_MAP.keys() for spec in l]
+    [d.update({SPECS_MAP[spec]: 1}) for spec in l if spec in SPECS_MAP.keys()]
   return d
 
 def specs_to_features(col):
